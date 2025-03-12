@@ -9,4 +9,4 @@ cd aws-ans
 
 ## Simple EC2 Public Instance
 
-![EX01](diagrams/example-01.drawio)
+![EX01](diagrams/example-01.drawio.svg)
