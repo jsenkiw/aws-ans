@@ -2,7 +2,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 3.0"
+      version = "~> 5.0"
     }
   }
 }
@@ -14,28 +14,17 @@ provider "aws" {
 resource "aws_vpc" "main-vpc" {
   cidr_block       = "10.0.0.0/16"
   assign_generated_ipv6_cidr_block = true
-
-  tags = {
-    Name = "main.vpc"
-  }
+  enable_dns_hostnames = true
 }
 
 resource "aws_internet_gateway" "internet-gw" {
   vpc_id = aws_vpc.main-vpc.id
-
-  tags = {
-    Name = "internet.gw"
-  }
 }
 
 resource "aws_subnet" "aza01-snet" {
   vpc_id            = aws_vpc.main-vpc.id
   cidr_block        = "10.0.1.0/24"
   availability_zone = "eu-west-2a"
-
-  tags = {
-    Name = "snet.aza.10.0.1.0"
-  }
 }
 
 resource "aws_route_table" "dmz-rt" {
@@ -49,10 +38,6 @@ resource "aws_route_table" "dmz-rt" {
   route {
     ipv6_cidr_block = "::/0"
     gateway_id = aws_internet_gateway.internet-gw.id
-  }
-
-  tags = {
-    Name = "dmz.rt"
   }
 }
 
@@ -78,26 +63,40 @@ resource "aws_security_group" "ssh-only" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  
-  tags = {
-    Name = "allow.ssh"
-  }
 }
 
+resource "aws_network_interface" "dmza-nic" {
+  subnet_id       = aws_subnet.aza01-snet.id
+  private_ips     = ["10.0.1.10"]
+  security_groups = [aws_security_group.ssh-only.id]
+}
+
+resource "aws_eip" "dmza-eip" {
+  domain                    = "vpc"
+  network_interface         = aws_network_interface.dmza-nic.id
+  associate_with_private_ip = "10.0.1.10"
+}
+
+
 resource "aws_instance" "dmza-host" {
-  ami           = "ami-0e56583ebfdfc098f"
-  instance_type = "t2.micro"
-  key_name = "aws-eu-w2.default"
-  vpc_security_group_ids = [aws_security_group.ssh-only.id]
-  subnet_id = aws_subnet.aza01-snet.id
-  associate_public_ip_address = true
+  ami             = "ami-0e56583ebfdfc098f"
+  instance_type   = "t2.micro"
+  key_name        = "aws-eu-w2.default"
   
-  tags = {
-  Name = "dmza.host"  
+  network_interface {
+    network_interface_id = aws_network_interface.dmza-nic.id
+    device_index = 0
   }
-}  
   
+}
+
+ 
 output "dmz-public-ip" {
   value       = aws_instance.dmza-host.public_ip
   description = "Public IP address DMZ Host"
+}
+
+output "dmz-public-dns" {
+  value       = aws_instance.dmza-host.public_dns
+  description = "Public DNS Host"
 }
