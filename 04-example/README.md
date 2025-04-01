@@ -1,4 +1,4 @@
-# Example-4: Public + Private Subnets
+# Example-4: Public + Private Subnets with NAT Gateway
 
 ![EX04](example-04.drawio.svg)
 
@@ -57,11 +57,11 @@ Examine the open TCP connections on the EC2 second private instance with the fol
 ss -tan
 ```
 
-Packet Inspection:
+Packet Inspection to get further verification of successful Internet access:
 ```
-sudo tcpdump -i enX0 icmp &
+sudo tcpdump -c 10 -i enX0 icmp &
 
-ping -c 3 ietf.org
+ping -c 5 ietf.org
 ```
 
 Login to the AWS Console https://aws.amazon.com and browse the resources built under the VPC + EC2 categories. 
