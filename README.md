@@ -24,13 +24,15 @@ git clone https://github.com/jsenkiw/aws-ans.git
 cd aws-ans
 ls -la
 ```
-*In the following examples EC2 provisioning and subsequent ssh login relies on manually creating (via AWS console) a key-pair in the AWS eu-west-2 region and saving the private key locally (~/.ssh folder) before running the terraform scripts!*  
+*In the following examples EC2 provisioning and subsequent ssh login relies on manually creating (via AWS console) a key-pair in the AWS eu-west-2 region and saving the private key locally (~/.ssh/aws-eu-w2.default) prior to running the terraform scripts!*  
 
 [Example-1: EC2 Public Instance](01-example/README.md)
 
 [Example-2: EC2 Public + Private Instance](02-example/README.md)
 
 [Example-3: Public + Private Subnet](03-example/README.md)
+
+[Example-4: Public + Private Subnet with NAT Gateway](03-example/README.md)
 
 ## Additional Resources Requiring Subscriptions
 

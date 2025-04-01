@@ -21,6 +21,15 @@ resource "aws_internet_gateway" "internet-gw" {
   vpc_id = aws_vpc.main-vpc.id
 }
 
+resource "aws_nat_gateway" "nat-gw" {
+  connectivity_type = "public"
+  allocation_id     = aws_eip.nat-gw-eip.id
+  subnet_id         = aws_subnet.aza01-snet.id
+  private_ip        = "10.0.1.100"
+
+  depends_on = [aws_internet_gateway.internet-gw]
+}
+
 resource "aws_subnet" "aza01-snet" {
   vpc_id            = aws_vpc.main-vpc.id
   cidr_block        = "10.0.1.0/24"
@@ -49,6 +58,11 @@ resource "aws_route_table" "public-rt" {
 
 resource "aws_route_table" "private-rt" {
   vpc_id = aws_vpc.main-vpc.id
+  
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_nat_gateway.nat-gw.id
+  }
 }
 
 resource "aws_route_table_association" "rt-public-aza" {
@@ -76,7 +90,7 @@ resource "aws_security_group" "ssh-only" {
     from_port   = -1
     to_port     = -1
     protocol    = "icmp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["10.0.0.0/16"]
   }
   
   egress {
@@ -105,10 +119,8 @@ resource "aws_network_interface" "dmzb-nic" {
   security_groups = [aws_security_group.ssh-only.id]
 }
 
-resource "aws_eip" "dmzb-eip" {
-  domain                    = "vpc"
-  network_interface         = aws_network_interface.dmzb-nic.id
-  associate_with_private_ip = "10.0.2.20"
+resource "aws_eip" "nat-gw-eip" {
+  domain = "vpc"
 }
 
 
@@ -150,9 +162,4 @@ output "dmza-public-dns" {
 output "dmzb-public-ip" {
   value       = aws_instance.dmzb-host.public_ip
   description = "Public IP address DMZ Host"
-}
-
-output "dmzb-public-dns" {
-  value       = aws_instance.dmzb-host.public_dns
-  description = "Public DNS Host"
 }
