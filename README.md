@@ -32,7 +32,7 @@ ls -la
 
 [Example-3: Public + Private Subnet](03-example/README.md)
 
-[Example-4: Public + Private Subnet with NAT Gateway](03-example/README.md)
+[Example-4: Public + Private Subnet with NAT Gateway](04-example/README.md)
 
 ## Additional Resources Requiring Subscriptions
 
